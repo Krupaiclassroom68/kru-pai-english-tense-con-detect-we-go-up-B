@@ -1,0 +1,1833 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>EP • PRESENT CONTINUOUS ASSAULT • BLACK × BLUE</title>
+<style>
+  :root{
+    --bg0:#04070d;
+    --bg1:#050c18;
+    --bg2:#061225;
+    --cyan:#1ea7ff;      /* electric blue */
+    --cyan2:#77d4ff;     /* ice blue */
+    --ice:#eaf6ff;
+    --steel:#cfd7e6;
+    --warn:#2b7bff;      /* blue accent */
+    --gold:#6bd6ff;
+    --ok:#4dff9a;
+    --glass: rgba(255,255,255,.06);
+    --glass2: rgba(30,167,255,.10);
+    --line: rgba(30,167,255,.22);
+    --shadow: 0 30px 90px rgba(0,0,0,.60);
+
+    --alert:#167bff;
+    --alert2:#6bbcff;
+}
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    color:var(--ice);
+    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Helvetica Neue";
+    background:
+      radial-gradient(1200px 600px at 50% -10%, rgba(0,229,255,.24), transparent 60%),
+      radial-gradient(800px 500px at 85% 20%, rgba(77,243,255,.12), transparent 60%),
+      radial-gradient(900px 650px at 10% 30%, rgba(255,0,60,.18), transparent 65%),
+      linear-gradient(180deg, var(--bg0), var(--bg1) 45%, var(--bg2));
+    overflow:hidden;
+  }
+
+  /* ====== Cinematic overlays ====== */
+  .scanlines{
+    pointer-events:none;
+    position:fixed; inset:0;
+    background: repeating-linear-gradient(
+      to bottom,
+      rgba(255,255,255,.035) 0px,
+      rgba(255,255,255,.035) 1px,
+      rgba(0,0,0,0) 3px,
+      rgba(0,0,0,0) 6px
+    );
+    mix-blend-mode: overlay;
+    opacity:.28;
+  }
+  .noise{
+    pointer-events:none;
+    position:fixed; inset:-40px;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)' opacity='.32'/%3E%3C/svg%3E");
+    opacity:.08;
+    animation: drift 7s linear infinite;
+  }
+  @keyframes drift{
+    0%{transform:translate3d(0,0,0)}
+    50%{transform:translate3d(-14px,9px,0)}
+    100%{transform:translate3d(0,0,0)}
+  }
+
+  /* ====== Fullscreen stage ====== */
+  .stage{
+    position:relative;
+    height:100%;
+    display:flex;
+    flex-direction:column;
+  }
+  canvas#fx{
+    position:fixed; inset:0;
+    width:100%; height:100%;
+    pointer-events:none;
+  }
+
+  /* ====== Top cinematic bar ====== */
+  .topbar{
+    position:relative;
+    padding:18px 18px 12px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+  }
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    min-width:0;
+  }
+  .badge{
+    width:44px;height:44px;border-radius:14px;
+    background:
+      radial-gradient(circle at 30% 25%, rgba(255,255,255,.35), transparent 55%),
+      linear-gradient(135deg, rgba(0,229,255,.30), rgba(255,59,122,.18)),
+      rgba(255,255,255,.06);
+    border:1px solid rgba(255,255,255,.14);
+    box-shadow: 0 16px 40px rgba(0,0,0,.4);
+    position:relative;
+    overflow:hidden;
+  }
+  .badge::after{
+    content:"";
+    position:absolute; inset:-60px;
+    background: radial-gradient(circle, rgba(77,243,255,.45), transparent 60%);
+    transform: translate(-25px,-20px);
+    filter: blur(10px);
+    opacity:.65;
+    animation: pulse 2.8s ease-in-out infinite;
+  }
+  @keyframes pulse{
+    0%,100%{opacity:.35; transform:translate(-30px,-24px) scale(.95)}
+    50%{opacity:.75; transform:translate(-10px,-8px) scale(1.08)}
+  }
+  .brandText{
+    min-width:0;
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+  }
+  .brandText .kicker{
+    font-weight:900;
+    letter-spacing:.12em;
+    font-size:12px;
+    opacity:.78;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .brandText .ep{
+    font-weight:1000;
+    font-size:16px;
+    letter-spacing:.02em;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+
+  .hud{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    justify-content:flex-end;
+  }
+  .chip{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:10px 12px;
+    border-radius:16px;
+    border:1px solid rgba(255,255,255,.12);
+    background: rgba(0,0,0,.32);
+    box-shadow: 0 14px 40px rgba(0,0,0,.25);
+    font-weight:900;
+    letter-spacing:.01em;
+    backdrop-filter: blur(10px);
+  }
+  .chip b{color:var(--cyan2)}
+  .chip .dot{
+    width:8px;height:8px;border-radius:99px;
+    background: var(--cyan);
+    box-shadow:0 0 14px rgba(0,229,255,.7);
+  }
+
+  /* ====== Main panel ====== */
+  .main{
+    flex:1;
+    display:grid;
+    place-items:center;
+    padding:16px 18px 22px;
+  }
+  .panel{
+    width:min(1120px, 100%);
+    border-radius:28px;
+    border:1px solid rgba(255,255,255,.14);
+    background:
+      radial-gradient(800px 420px at 50% 0%, rgba(0,229,255,.12), transparent 58%),
+      linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.26));
+    box-shadow: var(--shadow);
+    overflow:hidden;
+    position:relative;
+  }
+  .panel::before{
+    content:"";
+    position:absolute; inset:-2px;
+    background:
+      linear-gradient(90deg, transparent, rgba(77,243,255,.14), transparent),
+      radial-gradient(800px 400px at 85% 20%, rgba(255,0,60,.18), transparent 60%);
+    opacity:.9;
+    pointer-events:none;
+    animation: shimmer 6s linear infinite;
+  }
+  @keyframes shimmer{
+    0%{transform:translateX(-35%)}
+    100%{transform:translateX(35%)}
+  }
+  .panelInner{
+    position:relative;
+    padding:22px 22px 20px;
+    display:grid;
+    gap:16px;
+  }
+
+  /* ====== Cinematic title ====== */
+  .hero{
+    padding:18px 18px 12px;
+    border-radius:24px;
+    background:
+      radial-gradient(600px 220px at 50% 0%, rgba(255,255,255,.10), transparent 55%),
+      linear-gradient(180deg, rgba(0,0,0,.35), rgba(0,0,0,.08));
+    border:1px solid rgba(255,255,255,.10);
+    position:relative;
+    overflow:hidden;
+  }
+  .hero .flare{
+    position:absolute;
+    width:420px;height:420px;
+    background: radial-gradient(circle, rgba(0,229,255,.34), transparent 60%), radial-gradient(circle at 70% 60%, rgba(255,0,60,.22), transparent 65%);
+    filter: blur(2px);
+    top:-240px; left:-220px;
+    opacity:.9;
+    transform: rotate(18deg);
+    animation: sweep 4.8s ease-in-out infinite;
+  }
+  @keyframes sweep{
+    0%{transform:translate(-30px,10px) rotate(12deg); opacity:.35}
+    45%{transform:translate(420px,210px) rotate(12deg); opacity:.95}
+    100%{transform:translate(760px,260px) rotate(12deg); opacity:.25}
+  }
+  .heroTitle{
+    position:relative;
+    text-align:center;
+    line-height:1;
+    margin:2px 0 4px;
+  }
+  .heroTitle .metal{
+    font-weight:1100;
+    letter-spacing:.14em;
+    font-size: clamp(44px, 6vw, 96px);
+    text-transform:uppercase;
+    background:
+      linear-gradient(180deg, #f9fbff 0%, #bfc7d6 18%, #ffffff 33%, #9aa3b8 55%, #f6fbff 80%, #98a2b9 100%);
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+    text-shadow:
+      0 2px 0 rgba(0,0,0,.45),
+      0 14px 40px rgba(0,0,0,.55),
+      0 0 26px rgba(0,229,255,.18);
+    position:relative;
+  }
+  .heroTitle .metal::after{
+    content:"";
+    position:absolute; inset:-18px -30px;
+    background: linear-gradient(90deg, transparent, rgba(0,229,255,.20), transparent);
+    transform: skewX(-18deg);
+    mix-blend-mode: screen;
+    opacity:.7;
+    filter: blur(0.2px);
+    animation: titleScan 3.9s linear infinite;
+  }
+  @keyframes titleScan{
+    0%{transform:translateX(-65%) skewX(-18deg); opacity:.05}
+    25%{opacity:.55}
+    55%{opacity:.75}
+    100%{transform:translateX(65%) skewX(-18deg); opacity:.05}
+  }
+  .tagline{
+    text-align:center;
+    font-weight:900;
+    letter-spacing:.08em;
+    font-size: clamp(12px, 1.6vw, 18px);
+    opacity:.85;
+  }
+  .tagline b{
+    color:var(--cyan2);
+    text-shadow:0 0 14px rgba(0,229,255,.5);
+  }
+
+  /* ====== Screens ====== */
+  .screen{display:none}
+  .screen.active{display:block}
+
+  /* ====== Start screen content ====== */
+  .startGrid{
+    display:grid;
+    grid-template-columns: 1fr;
+    gap:14px;
+    padding:12px 6px 6px;
+  }
+  @media (min-width: 980px){
+    .startGrid{grid-template-columns: 1.1fr .9fr; align-items:stretch}
+  }
+  .box{
+    border-radius:22px;
+    border:1px solid rgba(255,255,255,.12);
+    background: rgba(0,0,0,.26);
+    padding:16px 16px;
+  }
+  .box h3{
+    margin:0 0 8px;
+    font-size:16px;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+  }
+  .how{
+    display:grid;
+    gap:10px;
+    font-weight:800;
+    opacity:.92;
+  }
+  .pill{
+    display:flex;
+    gap:10px;
+    align-items:flex-start;
+    padding:12px 12px;
+    border-radius:18px;
+    background: rgba(255,255,255,.06);
+    border:1px solid rgba(0,229,255,.14);
+  }
+  .pill i{
+    width:28px;height:28px;border-radius:12px;
+    display:grid;place-items:center;
+    background: rgba(0,229,255,.12);
+    border:1px solid rgba(0,229,255,.25);
+    box-shadow:0 0 18px rgba(0,229,255,.18);
+    flex:0 0 auto;
+  }
+  .fieldRow{
+    display:grid;
+    gap:10px;
+  }
+  .fieldRow label{
+    font-weight:1000;
+    letter-spacing:.06em;
+    font-size:12px;
+    opacity:.8;
+  }
+  input{
+    width:100%;
+    border-radius:18px;
+    border:1px solid rgba(255,255,255,.16);
+    background: rgba(0,0,0,.35);
+    color:var(--ice);
+    padding:16px 16px;
+    font-size:18px;
+    font-weight:800;
+    outline:none;
+  }
+  input:focus{
+    border-color: rgba(0,229,255,.55);
+    box-shadow:0 0 0 4px rgba(0,229,255,.12);
+  }
+
+  .ctaRow{
+    display:flex; gap:10px; flex-wrap:wrap;
+    margin-top:12px;
+  }
+  .btn{
+    border:0;
+    border-radius:18px;
+    padding:14px 16px;
+    font-size:16px;
+    font-weight:1000;
+    letter-spacing:.04em;
+    cursor:pointer;
+    color:#051018;
+    background: linear-gradient(180deg, var(--cyan2), var(--cyan));
+    box-shadow: 0 18px 50px rgba(0,229,255,.18);
+    transition: transform .08s ease, box-shadow .2s ease, filter .2s ease;
+  }
+  .btn:hover{transform: translateY(-1px); filter:saturate(1.1); box-shadow:0 22px 70px rgba(0,229,255,.24)}
+  .btn:active{transform: translateY(1px)}
+  .btn.secondary{
+    color:var(--ice);
+    background: rgba(255,255,255,.06);
+    border:1px solid rgba(255,255,255,.14);
+    box-shadow: 0 18px 50px rgba(0,0,0,.35);
+  }
+
+  /* ====== Game screen ====== */
+  .arena{
+    display:grid;
+    gap:14px;
+    padding:8px 6px 6px;
+  }
+  .questionBox{
+    border-radius:22px;
+    border:1px solid rgba(255,255,255,.14);
+    background:
+      radial-gradient(900px 260px at 50% 0%, rgba(0,229,255,.12), transparent 55%),
+      rgba(0,0,0,.28);
+    padding:18px 16px;
+    position:relative;
+    overflow:hidden;
+  }
+  .questionBox::after{
+    content:"";
+    position:absolute; inset:-2px;
+    background: linear-gradient(90deg, transparent, rgba(0,229,255,.10), transparent);
+    transform: skewX(-16deg) translateX(-65%);
+    animation: qScan 4.4s linear infinite;
+    opacity:.55;
+    pointer-events:none;
+  }
+  @keyframes qScan{
+    0%{transform: skewX(-16deg) translateX(-85%); opacity:.05}
+    35%{opacity:.6}
+    100%{transform: skewX(-16deg) translateX(85%); opacity:.05}
+  }
+  .qMeta{
+    display:flex; gap:10px; flex-wrap:wrap;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:10px;
+  }
+  .qNo{
+    font-weight:1000;
+    letter-spacing:.08em;
+    opacity:.85;
+  }
+  .timer{
+    display:flex; align-items:center; gap:10px;
+    font-weight:1000;
+    letter-spacing:.06em;
+  }
+  .bar{
+    width:180px; height:10px; border-radius:99px;
+    background: rgba(255,255,255,.08);
+    border:1px solid rgba(255,255,255,.12);
+    overflow:hidden;
+  }
+  .bar > span{
+    display:block;
+    height:100%;
+    width:100%;
+    background: linear-gradient(90deg, var(--cyan), rgba(0,229,255,.35));
+    box-shadow:0 0 18px rgba(0,229,255,.35);
+    border-radius:99px;
+    transform-origin:left center;
+  }
+  .qText{
+    text-align:center;
+    font-weight:1100;
+    font-size: clamp(26px, 3.2vw, 54px);
+    letter-spacing:.01em;
+  }
+
+  .optGrid{
+    display:grid;
+    grid-template-columns: 1fr;
+    gap:12px;
+  }
+  @media(min-width: 740px){
+    .optGrid{grid-template-columns: repeat(3, 1fr)}
+  }
+  .opt{
+    border-radius:22px;
+    border:1px solid rgba(0,229,255,.24);
+    background: rgba(255,255,255,.06);
+    padding:18px 14px;
+    text-align:center;
+    font-weight:1100;
+    font-size: clamp(20px, 2.1vw, 34px);
+    letter-spacing:.02em;
+    cursor:pointer;
+    user-select:none;
+    color:#ffffff;
+    text-shadow:0 0 12px rgba(255,255,255,.35);
+    transition: transform .08s ease, border-color .2s ease, background .2s ease, box-shadow .2s ease;
+    position:relative;
+    overflow:hidden;
+  }
+  .opt::before{
+    content:"";
+    position:absolute; inset:-2px;
+    background: radial-gradient(circle at 25% 20%, rgba(255,255,255,.20), transparent 45%);
+    opacity:.55;
+    pointer-events:none;
+  }
+  .opt:hover{
+    transform: translateY(-1px);
+    border-color: rgba(0,229,255,.55);
+    background: rgba(0,229,255,.10);
+    box-shadow: 0 0 0 1px rgba(0,229,255,.14), 0 18px 60px rgba(0,229,255,.12);
+  }
+  .opt.locked{pointer-events:none; opacity:.75}
+  .opt.correct{
+    border-color: rgba(77,255,154,.65);
+    background: rgba(77,255,154,.10);
+    box-shadow: 0 0 0 1px rgba(77,255,154,.14), 0 18px 60px rgba(77,255,154,.10);
+  }
+  .opt.wrong{
+    border-color: rgba(255,59,122,.70);
+    background: rgba(255,59,122,.10);
+    box-shadow: 0 0 0 1px rgba(255,59,122,.16), 0 18px 60px rgba(255,59,122,.12);
+  }
+
+  .msgRow{
+    display:flex;
+    justify-content:center;
+    min-height:44px;
+    align-items:center;
+    font-weight:1000;
+    letter-spacing:.03em;
+    opacity:.95;
+    text-align:center;
+  }
+  .msgRow .ok{color:var(--ok); text-shadow:0 0 14px rgba(77,255,154,.25)}
+  .msgRow .bad{color:var(--warn); text-shadow:0 0 14px rgba(255,59,122,.25)}
+
+  /* ===== Villain row ===== */
+.villainRow{
+  display:grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap:10px;
+}
+.villainCard{
+  border-radius:20px;
+  border:1px solid rgba(255,255,255,.14);
+  background: rgba(0,0,0,.26);
+  padding:12px 12px 10px;
+  position:relative;
+  overflow:hidden;
+}
+.villainCard::before{
+  content:"";
+  position:absolute; inset:-2px;
+  background: radial-gradient(circle at 25% 20%, rgba(0,229,255,.14), transparent 55%);
+  opacity:.9;
+  pointer-events:none;
+}
+.villainCard[data-v="0"]{border-color: rgba(255,59,122,.35);}
+.villainCard[data-v="1"]{border-color: rgba(0,229,255,.30);}
+.villainCard[data-v="2"]{border-color: rgba(255,211,106,.26);}
+.vTop{
+  display:flex; align-items:center; justify-content:space-between;
+  font-weight:1100;
+  letter-spacing:.08em;
+}
+.vEmoji{font-size:22px; filter: drop-shadow(0 0 10px rgba(0,0,0,.45));}
+.vName{
+  font-size:14px;
+  padding:4px 10px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.06);
+}
+.vSub{
+  margin-top:6px;
+  font-weight:900;
+  font-size:12px;
+  opacity:.78;
+  letter-spacing:.08em;
+}
+.vBounty{
+  margin-top:6px;
+  font-weight:1200;
+  font-size:18px;
+  background: linear-gradient(90deg, #fff, var(--cyan2), #fff);
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+  text-shadow: 0 0 18px rgba(0,229,255,.12);
+}
+.vBar{
+  margin-top:10px;
+  height:10px;
+  border-radius:999px;
+  background: rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.10);
+  overflow:hidden;
+}
+.vBar > span{
+  display:block; height:100%; width:0%;
+  background: linear-gradient(90deg, var(--cyan), rgba(0,229,255,.22));
+  box-shadow:0 0 18px rgba(0,229,255,.28);
+  border-radius:999px;
+  transition: width .18s ease;
+}
+.villainCard.dead{
+  opacity:.22;
+  filter: grayscale(1);
+}
+.villainCard.dead .vEmoji{transform: rotate(-12deg) scale(.92); opacity:.65;}
+.villainCard.dead::after{
+  content:"DISINTEGRATED";
+  position:absolute; inset:0;
+  display:grid; place-items:center;
+  font-weight:1200;
+  letter-spacing:.16em;
+  font-size:12px;
+  color: rgba(255,59,122,.55);
+  background: rgba(0,0,0,.36);
+}
+
+/* ===== Money popup ===== */
+.moneyPop{
+  position:fixed;
+  left:50%; top:50%;
+  transform:translate(-50%,-50%);
+  z-index:99;
+  padding:18px 18px;
+  border-radius:22px;
+  border:1px solid rgba(255,255,255,.16);
+  background: linear-gradient(180deg, rgba(0,0,0,.55), rgba(0,0,0,.22));
+  box-shadow: 0 30px 120px rgba(0,0,0,.65);
+  text-align:center;
+  min-width: min(520px, 92vw);
+  display:none;
+}
+.moneyPop.show{display:block; animation: popIn .22s ease-out;}
+@keyframes popIn{
+  from{transform:translate(-50%,-50%) scale(.92); opacity:0}
+  to{transform:translate(-50%,-50%) scale(1); opacity:1}
+}
+.moneyPop .big{
+  font-weight:1300;
+  font-size: clamp(32px, 5vw, 58px);
+  letter-spacing:.06em;
+  background: linear-gradient(90deg, #fff, var(--gold), #fff);
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+  text-shadow: 0 24px 70px rgba(0,0,0,.65);
+}
+.moneyPop .line{
+  margin-top:6px;
+  font-weight:1000;
+  letter-spacing:.08em;
+  opacity:.9;
+}
+.moneyPop .small{
+  margin-top:10px;
+  font-weight:850;
+  opacity:.82;
+}
+
+  /* ====== Result screen ====== */
+
+  .result{
+    display:grid;
+    gap:12px;
+    padding:10px 6px 6px;
+    text-align:center;
+  }
+  .resultHero{
+    border-radius:22px;
+    border:1px solid rgba(255,255,255,.14);
+    background:
+      radial-gradient(900px 260px at 50% 0%, rgba(255,59,122,.18), transparent 58%),
+      radial-gradient(800px 240px at 20% 10%, rgba(0,229,255,.12), transparent 55%),
+      linear-gradient(180deg, rgba(0,0,0,.42), rgba(0,0,0,.18));
+    padding:14px 12px;
+    box-shadow: 0 22px 80px rgba(0,0,0,.45);
+    position:relative;
+    overflow:hidden;
+  }
+  .resultHero::after{
+    content:"";
+    position:absolute; inset:-2px;
+    background: linear-gradient(90deg, transparent, rgba(255,59,122,.18), transparent);
+    transform: skewX(-14deg) translateX(-70%);
+    animation: qScan 4.2s linear infinite;
+    opacity:.7;
+    pointer-events:none;
+  }
+  .resultTitle{
+    font-weight:1200;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    font-size: clamp(18px, 2.6vw, 28px);
+    color: rgba(255,255,255,.92);
+    text-shadow: 0 10px 40px rgba(0,0,0,.55);
+  }
+  .resultSub{
+    margin-top:6px;
+    font-weight:1000;
+    letter-spacing:.10em;
+    opacity:.9;
+    font-size: clamp(12px, 1.7vw, 16px);
+  }
+  .resultSub .alert{
+    color: var(--warn);
+    text-shadow: 0 0 18px rgba(255,59,122,.35);
+  }
+
+  .scoreBig{
+    font-size: clamp(44px, 6.5vw, 104px);
+    font-weight:1300;
+    letter-spacing:.06em;
+    background: linear-gradient(90deg, #fff, var(--cyan2), #fff);
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+    text-shadow: 0 18px 60px rgba(0,0,0,.55);
+  }
+  .grade{
+    font-weight:1200;
+    letter-spacing:.10em;
+    opacity:.92;
+  }
+  .mini{
+    opacity:.86;
+    font-weight:900;
+  }
+
+  .statGrid{
+    display:grid;
+    gap:10px;
+    grid-template-columns: 1fr;
+    margin-top:4px;
+  }
+  @media (min-width: 740px){
+    .statGrid{ grid-template-columns: repeat(4, 1fr); }
+  }
+  .statCard{
+    border-radius:20px;
+    border:1px solid rgba(255,255,255,.14);
+    background:
+      radial-gradient(700px 240px at 20% 0%, rgba(0,229,255,.10), transparent 55%),
+      radial-gradient(700px 240px at 80% 0%, rgba(255,59,122,.12), transparent 55%),
+      rgba(0,0,0,.28);
+    padding:12px 12px 10px;
+    box-shadow: 0 16px 60px rgba(0,0,0,.35);
+  }
+  .statLabel{
+    font-weight:1000;
+    letter-spacing:.12em;
+    font-size:12px;
+    opacity:.80;
+  }
+  .statValue{
+    margin-top:6px;
+    font-weight:1300;
+    font-size: clamp(22px, 2.8vw, 34px);
+    background: linear-gradient(90deg, #fff, rgba(255,59,122,.9), #fff);
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+    text-shadow: 0 10px 40px rgba(0,0,0,.55);
+  }
+
+  .resultActions{
+    display:flex;
+    gap:10px;
+    justify-content:center;
+    flex-wrap:wrap;
+    margin-top:6px;
+  }
+
+
+  /* ====== Footer hint ====== */
+  .foot{
+    padding:10px 16px 16px;
+    text-align:center;
+    font-weight:850;
+    opacity:.75;
+    letter-spacing:.02em;
+  }
+
+  /* ====== TV boost ====== */
+  @media (min-width: 1200px){
+    .topbar{padding:22px 26px 14px}
+    .badge{width:54px;height:54px;border-radius:18px}
+    .brandText .ep{font-size:18px}
+    .chip{padding:12px 14px; font-size:16px}
+    .panel{border-radius:0; width:100%; max-width:none; min-height: calc(100vh - 96px);}
+    .panelInner{padding:26px 34px 24px}
+    .hero{padding:22px 22px 16px}
+    .bar{width:240px;height:12px}
+    input{font-size:22px; padding:18px}
+    .btn{font-size:18px; padding:16px 18px}
+    .opt{padding:22px 16px}
+  }
+
+  /* Safe areas (mobile notch) */
+  .safeTop{padding-top: env(safe-area-inset-top);}
+  .safeBottom{padding-bottom: env(safe-area-inset-bottom);}
+/* ====== Mobile Fix (prevent bottom UI overlap) ====== */
+@media (max-width: 520px), (max-height: 760px){
+  body{ overflow:auto; }
+  .stage{ min-height: 100svh; height:auto; }
+  .main{ padding: 10px 12px 18px; }
+  .topbar{ padding: 14px 12px 10px; align-items:flex-start; }
+  .hud{ justify-content:flex-start; }
+  .chip{ padding: 8px 10px; border-radius:14px; font-size: 13px; }
+  .badge{ width:40px; height:40px; border-radius:14px; }
+  .panel{ border-radius: 22px; }
+  .panelInner{ padding: 14px 14px 16px; }
+  .hero{ padding: 14px 12px 10px; border-radius: 18px; }
+  .heroTitle .metal{ letter-spacing:.10em; }
+  .startGrid{ padding: 8px 0 0; }
+  .box{ padding: 12px 12px; border-radius: 18px; }
+  input{ font-size: 18px; padding: 14px; }
+  .btn{ width: 100%; justify-content:center; }
+  .ctaRow{ width:100%; }
+  .questionBox{ padding: 14px 12px; border-radius: 18px; }
+  .bar{ width: 150px; }
+  .opt{ padding: 16px 12px; border-radius: 18px; }
+  .foot{ padding-bottom: calc(16px + env(safe-area-inset-bottom)); }
+}
+
+/* Allow scrolling inside the panel if content is taller than viewport */
+.panelInner{
+  max-height: calc(100svh - 110px);
+  overflow:auto;
+  -webkit-overflow-scrolling: touch;
+}
+</style>
+</head>
+<body>
+<canvas id="fx"></canvas>
+<div class="noise"></div>
+<div class="scanlines"></div>
+
+<div class="stage safeTop safeBottom">
+  <div class="topbar">
+    <div class="brand">
+      <div class="badge" aria-hidden="true"></div>
+      <div class="brandText">
+        <div class="kicker">INFINITE LEARNING STUDIO • KRU PAI CLASSROOM</div>
+        <div class="ep">EP • Present Continuous Assault — <span style="color:var(--cyan2)">BLACK</span> × <span style="color:var(--cyan)">BLUE</span></div>
+      </div>
+    </div>
+      <div class="hud" aria-label="HUD">
+    <div class="chip"><span class="dot"></span>Score <b id="hudScore">0</b></div>
+    <div class="chip"><span class="dot"></span>Correct <b id="hudCorrect">0</b></div>
+    <div class="chip"><span class="dot"></span>Wrong <b id="hudWrong">0</b></div>
+    <div class="chip"><span class="dot"></span>Streak <b id="hudStreak">0</b>/10</div>
+    <div class="chip"><span class="dot"></span>Kills <b id="hudKills">0</b>/3</div>
+  </div>
+</div>
+
+<div class="main">
+    <div class="panel">
+      <div class="panelInner">
+        <div class="hero">
+          <div class="flare" aria-hidden="true"></div>
+          <div class="heroTitle"><div class="metal">PRESENT CONTINUOUS ASSAULT</div></div>
+          <div class="tagline">AFFIRMATIVE • NEGATIVE • QUESTIONS • <b>BLACK × BLUE</b></div>
+        </div>
+
+        <!-- START SCREEN -->
+        <section class="screen active" id="startScreen">
+          <div class="startGrid">
+            <div class="box">
+              <h3>How to play</h3>
+              <div class="how">
+                <div class="pill"><i>1</i><div>Scan the SUBJECT first, then choose the correct verb form. Each hit damages the Boss. 💥</div></div>
+                <div class="pill"><i>2</i><div>Wrong answer breaks your streak. Stay sharp—watch the SUBJECT + TIME SIGNAL. 🛡️</div></div>
+                <div class="pill"><i>3</i><div>Get 10 correct in a row to KILL 1 villain (+10 bonus). Pro tip: Scan SUBJECT first. Present Continuous: I am • You/We/They are • He/She/It is • Add -ing. 💡</div></div>
+              </div>
+            </div>
+            <div class="box">
+              <h3>Player</h3>
+              <div class="fieldRow">
+                <label>YOUR NAME</label>
+                <input id="playerName" type="text" placeholder="Type your name..." maxlength="24" />
+              </div>
+              <div class="fieldRow" style="margin-top:12px">
+                <label>MODE</label>
+                <div class="pill" style="align-items:center; gap:12px;">
+                  <i>⚙️</i>
+                  <div style="display:grid; gap:8px; width:100%;">
+                    <label style="display:flex; gap:10px; align-items:center; font-weight:1000;">
+                      <input type="radio" name="mode" value="timed" checked style="width:18px; height:18px; accent-color: var(--cyan);" />
+                      ⏳ Timed (10s / question)
+                    </label>
+                    <label style="display:flex; gap:10px; align-items:center; font-weight:1000;">
+                      <input type="radio" name="mode" value="untimed" style="width:18px; height:18px; accent-color: var(--cyan);" />
+                      🧪 Practice (No timer)
+                    </label>
+                    <div style="font-weight:850; opacity:.82; font-size:13px;">
+                      Scoring: +1 per correct • 10 correct in a row = +10 bonus &amp; kill 1 villain.
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="ctaRow">
+                <button class="btn" id="btnStart">▶ START BATTLE</button>
+                <button class="btn secondary" id="btnFull">⛶ FULLSCREEN</button>
+                <button class="btn secondary" id="btnSound">🔊 SOUND: ON</button>
+              </div>
+              <div style="height:10px"></div>
+              <div class="mini">Tip: On phone, turn landscape for big view. On TV, press Fullscreen.</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- GAME SCREEN -->
+        <section class="screen" id="gameScreen">
+                <div class="arena">
+<div class="villainRow" aria-label="Villains">
+  <div class="villainCard" data-v="0">
+    <div class="vTop"><span class="vEmoji">😈</span><span class="vName">A</span></div>
+    <div class="vSub">BLUE FORTRESS</div>
+    <div class="vBounty">฿100</div>
+    <div class="vBar"><span></span></div>
+  </div>
+  <div class="villainCard" data-v="1">
+    <div class="vTop"><span class="vEmoji">👿</span><span class="vName">B</span></div>
+    <div class="vSub">NEON WARDEN</div>
+    <div class="vBounty">฿100</div>
+    <div class="vBar"><span></span></div>
+  </div>
+  <div class="villainCard" data-v="2">
+    <div class="vTop"><span class="vEmoji">🤖</span><span class="vName">C</span></div>
+    <div class="vSub">ICE SENTINEL</div>
+    <div class="vBounty">฿100</div>
+    <div class="vBar"><span></span></div>
+  </div>
+</div>
+
+<div class="questionBox">
+              <div class="qMeta">
+                <div class="qNo" id="qNo">QUESTION 1/30</div>
+                <div class="timer">
+                  <span>⏳</span><span id="tText">15s</span>
+                  <div class="bar" aria-hidden="true"><span id="tBar"></span></div>
+                </div>
+              </div>
+              <div class="qText" id="qText">Loading…</div>
+            </div>
+
+            <div class="optGrid" id="optGrid"></div>
+
+            <div class="msgRow" id="msgRow"></div>
+
+            <div class="ctaRow" style="justify-content:center;">
+              <button class="btn secondary" id="btnHome">⌂ HOME</button>
+              <button class="btn" id="btnNext">NEXT ▶</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- RESULT SCREEN -->
+        <section class="screen" id="resultScreen">
+  <div class="result">
+    <div class="resultHero">
+      <div class="resultTitle">MISSION RESULT</div>
+      <div class="resultSub">BLACK × <span class="alert">BLUE</span></div>
+    </div>
+
+    <div class="scoreBig" id="finalScore">0</div>
+    <div class="grade" id="finalGrade">MISSION REPORT</div>
+    <div class="mini" id="finalLine">—</div>
+
+    
+    <div class="statGrid" aria-label="Battle Stats">
+      <div class="statCard">
+        <div class="statLabel">CORRECT</div>
+        <div class="statValue"><span id="finalCorrect">0</span>/30</div>
+      </div>
+      <div class="statCard">
+        <div class="statLabel">WRONG</div>
+        <div class="statValue"><span id="finalWrong">0</span></div>
+      </div>
+      <div class="statCard">
+        <div class="statLabel">KILLS (BONUS)</div>
+        <div class="statValue"><span id="finalKills">0</span> (+<span id="finalBonus">0</span>)</div>
+      </div>
+      <div class="statCard">
+        <div class="statLabel">BEST STREAK</div>
+        <div class="statValue"><span id="finalBestStreak">0</span></div>
+      </div>
+    </div>
+
+
+    <div class="resultActions">
+      <button class="btn" id="btnPlayAgain">↻ PLAY AGAIN</button>
+      <button class="btn secondary" id="btnBackHome2">⌂ HOME</button>
+      <button class="btn secondary" id="btnFull2">⛶ FULLSCREEN</button>
+    </div>
+  </div>
+</section>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">Made for kids • Train analysis • Present Continuous • Black × Blue • Kru Pai Classroom</div>
+</div>
+
+<div class="moneyPop" id="moneyPop" role="dialog" aria-live="polite">
+  <div class="big" id="moneyBig">฿100 THB</div>
+  <div class="line" id="moneyLine">BOUNTY CLAIMED!</div>
+  <div class="small" id="moneySmall">Villain A disintegrated.</div>
+</div>
+
+<script>
+/* ========= Question Set (sample) =========
+   Replace / expand freely. Keep c index as correct choice.
+*/
+const QUESTIONS = [
+  { q: "He ___ to school right now.", options: ["is going", "are going", "is gooing"], correct: "is going" },
+  { q: "They ___ soccer at the moment.", options: ["are playing", "is playing", "are plaing"], correct: "are playing" },
+  { q: "I ___ a new lesson now.", options: ["am making", "is making", "am makeing"], correct: "am making" },
+  { q: "She ___ in the library right now.", options: ["is studying", "are studying", "is studing"], correct: "is studying" },
+  { q: "The dog ___ in the yard now.", options: ["is running", "are running", "is runing"], correct: "is running" },
+  { q: "We ___ dinner at the moment.", options: ["are having", "is having", "are haveing"], correct: "are having" },
+  { q: "My brother ___ a bike now.", options: ["is riding", "are riding", "is rideing"], correct: "is riding" },
+  { q: "The baby ___ right now.", options: ["is crying", "are crying", "is cryeing"], correct: "is crying" },
+  { q: "You ___ too fast right now.", options: ["are talking", "is talking", "are taling"], correct: "are talking" },
+  { q: "The teacher ___ on the board now.", options: ["is writing", "are writing", "is writeing"], correct: "is writing" },
+  { q: "He ___ TV right now.", options: ["isn't watching", "aren't watching", "isn't watchting"], correct: "isn't watching" },
+  { q: "They ___ in class now.", options: ["aren't sleeping", "isn't sleeping", "aren't sleepping"], correct: "aren't sleeping" },
+  { q: "I ___ my phone at the moment.", options: ["am not using", "is not using", "am not useing"], correct: "am not using" },
+  { q: "She ___ today.", options: ["isn't coming", "aren't coming", "isn't comming"], correct: "isn't coming" },
+  { q: "We ___ outside right now.", options: ["aren't going", "isn't going", "aren't gooing"], correct: "aren't going" },
+  { q: "The cat ___ on the table now.", options: ["is not sitting", "are not sitting", "is not siting"], correct: "is not sitting" },
+  { q: "You ___ attention right now.", options: ["aren't listening", "isn't listening", "aren't lissening"], correct: "aren't listening" },
+  { q: "My mom ___ right now.", options: ["isn't driving", "aren't driving", "isn't driveing"], correct: "isn't driving" },
+  { q: "The students ___ today.", options: ["aren't studying", "isn't studying", "aren't studing"], correct: "aren't studying" },
+  { q: "I ___ my homework now.", options: ["am not finishing", "is not finishing", "am not finishhing"], correct: "am not finishing" },
+  { q: "___ to school right now?", options: ["Is he going", "Are he going", "Is he gooing"], correct: "Is he going" },
+  { q: "___ dinner at the moment?", options: ["Are they having", "Is they having", "Are they haveing"], correct: "Are they having" },
+  { q: "___ a new game right now?", options: ["Are you making", "Is you making", "Are you makeing"], correct: "Are you making" },
+  { q: "___ in the pool now?", options: ["Is she swimming", "Are she swimming", "Is she swiming"], correct: "Is she swimming" },
+  { q: "___ a picture right now?", options: ["Are we drawing", "Is we drawing", "Are we drawring"], correct: "Are we drawing" },
+  { q: "___ on the sofa now?", options: ["Is the cat lying", "Are the cat lying", "Is the cat lyeing"], correct: "Is the cat lying" },
+  { q: "___ a bike right now?", options: ["Is Tom riding", "Are Tom riding", "Is Tom rideing"], correct: "Is Tom riding" },
+  { q: "___ a test now?", options: ["Are the students taking", "Is the students taking", "Are the students takeing"], correct: "Are the students taking" },
+  { q: "___ the door right now?", options: ["Is she closing", "Are she closing", "Is she closeing"], correct: "Is she closing" },
+  { q: "___ in the kitchen now?", options: ["Are you cutting", "Is you cutting", "Are you cuting"], correct: "Are you cutting" }
+];
+/* ===== Present Continuous option builder (IS/AM/ARE + V-ING) ===== */
+function ingForm(base){
+  if(!base) return "";
+  if(base.endsWith("ie")) return base.slice(0,-2) + "ying";                 // die -> dying
+  if(base.endsWith("e") && !base.endsWith("ee")) return base.slice(0,-1) + "ing"; // make -> making
+  const doubles = new Set(["run","swim","sit","stop","plan","get","cut","begin"]);
+  if(doubles.has(base)) return base + base.slice(-1) + "ing";
+  return base + "ing";
+}
+function beFor(subject){
+  if(subject === "I") return "am";
+  if(subject === "you" || subject === "we" || subject === "they") return "are";
+  return "is"; // he/she/it + singular noun
+}
+function notFor(subject){
+  if(subject === "I") return "I'm not";
+  if(subject === "you" || subject === "we" || subject === "they") return "aren't";
+  return "isn't";
+}
+function cap(s){ return s ? (s[0].toUpperCase()+s.slice(1)) : s; }
+
+function isPluralPhrase(p){
+  const s = (p||"").trim().toLowerCase();
+  if(s === "we" || s === "they" || s === "you") return true;
+  // treat plural nouns (simple heuristic)
+  if(s.endsWith("s") && !["his","this","is"].includes(s)) return true;
+  return false;
+}
+function isI(p){ return (p||"").trim().toLowerCase() === "i"; }
+function beForPhrase(p, cap=false){
+  const s = (p||"").trim();
+  const low = s.toLowerCase();
+  let be = "is";
+  if(low === "i") be = "am";
+  else if(isPluralPhrase(low)) be = "are";
+  be = cap ? (be[0].toUpperCase()+be.slice(1)) : be;
+  return be;
+}
+function doForPhrase(p, cap=false){
+  const s = (p||"").trim().toLowerCase();
+  let d = "does";
+  if(s === "i" || s === "we" || s === "they" || s === "you") d = "do";
+  // plural nouns => do
+  if(isPluralPhrase(s) && s !== "he" && s !== "she" && s !== "it") d = "do";
+  d = cap ? (d[0].toUpperCase()+d.slice(1)) : d;
+  return d;
+}
+function thirdPerson(base){
+  // naive 3rd person singular for Present Simple traps
+  if(!base) return base;
+  if(base === "have") return "has";
+  if(base.endsWith("y") && !"aeiou".includes(base[base.length-2])) return base.slice(0,-1) + "ies";
+  if(/(s|sh|ch|x|z|o)$/i.test(base)) return base + "es";
+  return base + "s";
+}
+
+function subjCap(p){
+  const s = (p||"").trim();
+  // keep original casing for names/phrases
+  return s;
+}
+
+function auxLower(subject){
+  if(subject === "I") return "am";
+  if(subject === "you" || subject === "we" || subject === "they") return "are";
+  return "is"; // he/she/it/singular
+}
+function cap1(s){ return s ? (s[0].toUpperCase()+s.slice(1)) : s; }
+
+function wrongAuxLower(correct){
+  const pool = ["am","is","are"].filter(x=>x!==correct);
+  return pool[Math.floor(Math.random()*pool.length)];
+}
+
+function wrongIngVariants(base){
+  const correct = ingForm(base);
+  const out = new Set();
+
+  // Special classic traps
+  if(base === "go"){
+    out.add("gooing"); // double-o trap
+    out.add("goeing"); // extra-e trap
+  }
+
+  // keep 'e' trap: makeing, writeing
+  if(base.endsWith("e") && !base.endsWith("ee")){
+    out.add(base + "ing");
+  }
+
+  // ie -> ying trap: lieing, dieing
+  if(base.endsWith("ie")){
+    out.add(base + "ing");
+  }
+
+  // y-ending trap: studing (should be studying)
+  if(base.endsWith("y") && base.length>=2 && !"aeiou".includes(base[base.length-2])){
+    out.add(base.slice(0,-1) + "ing");
+  }
+
+  // missing double consonant trap: runing, siting, stoping, planing, begining, swiming, cuting
+  const doubles = new Set(["run","swim","sit","stop","plan","get","cut","begin"]);
+  if(doubles.has(base)){
+    out.add(base + "ing");
+  }
+
+  // extra double consonant trap (often wrong): watcching, readinng
+  const last = base.slice(-1);
+  if(base.length>=3 && !"aeiou".includes(last) && !["w","x","y"].includes(last) && !doubles.has(base)){
+    out.add(base + last + "ing");
+  }
+
+  // If still too few, add a "double vowel" style trap
+  if(out.size < 2){
+    out.add(correct.replace("ing","iing"));
+  }
+
+  // never include the correct form
+  out.delete(correct);
+
+  return [...out];
+}
+
+function buildOptions(q){
+  const kind = q.kind || "phrase";
+  const base = q.base || "";
+  const subject = q.subject || "he";
+  const neg = !!q.neg;
+
+  // --------- KIND: phrase (choose FULL 'be + (not) + V-ing') ----------
+  if(kind === "phrase"){
+    const aux = auxLower(subject);
+    const ing = ingForm(base);
+    const correct = `${aux}${neg ? " not" : ""} ${ing}`;
+
+    const wrongAux = wrongAuxLower(aux);
+    const trap1 = `${wrongAux}${neg ? " not" : ""} ${ing}`;
+
+    const wrongs = wrongIngVariants(base);
+    const wIng = (wrongs[0] || (ing + "iing"));
+    const trap2 = `${aux}${neg ? " not" : ""} ${wIng}`;
+
+    let opts = [correct, trap1, trap2];
+
+    // ensure unique & shuffle
+    opts = [...new Set(opts)];
+    while(opts.length < 3){
+      opts.push(correct);
+    }
+    opts = opts.slice(0,3);
+
+    for(let i=opts.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [opts[i], opts[j]] = [opts[j], opts[i]];
+    }
+    q.correct = correct; // engine expects q.correct
+    return opts;
+  }
+
+  // --------- KIND: ing (choose ONLY the -ing spelling) ----------
+  if(kind === "ing"){
+    const correct = ingForm(base);
+    const wrongs = wrongIngVariants(base);
+    // pick 2 distinct wrongs
+    const trapA = wrongs[0] || (correct.replace("ing","iing"));
+    const trapB = wrongs[1] || (correct.slice(0,-3) + "eing"); // small variation
+
+    let opts = [correct, trapA, trapB];
+    opts = [...new Set(opts)];
+    while(opts.length < 3) opts.push(correct);
+    opts = opts.slice(0,3);
+
+    for(let i=opts.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [opts[i], opts[j]] = [opts[j], opts[i]];
+    }
+    q.correct = correct;
+    return opts;
+  }
+
+  // --------- KIND: aux (choose AM / IS / ARE) ----------
+  if(kind === "aux"){
+    const correct = cap1(auxLower(subject));
+    const pool = ["Am","Is","Are"].filter(x=>x!==correct);
+    const trapA = pool[Math.floor(Math.random()*pool.length)];
+    const trapB = pool.filter(x=>x!==trapA)[0] || pool[0] || "Is";
+
+    let opts = [correct, trapA, trapB];
+    for(let i=opts.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [opts[i], opts[j]] = [opts[j], opts[i]];
+    }
+    q.correct = correct;
+    return opts;
+  }
+
+  // fallback
+  q.correct = q.correct || "";
+  return [q.correct, q.correct, q.correct];
+}
+const CFG = {
+  timePerQ: 10, // used only in TIMED mode
+  streakToKill: 10,
+  villains: 3
+};
+
+const BOUNTY_PER_KILL_THB = 100;
+const TOTAL_VILLAINS = CFG.villains;
+
+
+let state = {
+  idx: 0,
+  order: [],
+  // scoring (simple + clear for kids)
+  score: 0,          // total score (0..60)
+  correctCount: 0,   // 0..30
+  wrongCount: 0,     // 0..30
+  bonusScore: 0,     // +10 per kill (0..30)
+
+  locked: false,
+  timer: null,
+  timeLeft: CFG.timePerQ,
+  timed: true,       // timed vs practice
+
+  soundOn: true,
+  player: "",
+
+  streak: 0,
+  bestStreak: 0,
+  kills: 0,
+  currentVillain: 0,
+
+  currentOptions: [],
+  pendingNext: null
+};
+
+const $ = (id)=>document.getElementById(id);
+
+function show(screenId){
+  for(const el of document.querySelectorAll('.screen')) el.classList.remove('active');
+  $(screenId).classList.add('active');
+}
+
+function clamp(n,a,b){return Math.max(a, Math.min(b,n));}
+
+/* ===== Sound (WebAudio) ===== */
+let audioCtx = null;
+function ensureAudio(){
+  if(!audioCtx){
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+}
+function beep(type="ok"){
+  if(!state.soundOn) return;
+  ensureAudio();
+  const t0 = audioCtx.currentTime;
+
+  const o = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  const f = audioCtx.createBiquadFilter();
+  f.type = "lowpass";
+  f.frequency.value = type==="ok" ? 1600 : 900;
+
+  o.type = type==="ok" ? "sawtooth" : "square";
+  o.frequency.setValueAtTime(type==="ok" ? 520 : 220, t0);
+  o.frequency.exponentialRampToValueAtTime(type==="ok" ? 860 : 140, t0 + 0.14);
+
+  g.gain.setValueAtTime(0.0001, t0);
+  g.gain.exponentialRampToValueAtTime(type==="ok" ? 0.22 : 0.18, t0 + 0.03);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.18);
+
+  o.connect(f); f.connect(g); g.connect(audioCtx.destination);
+  o.start(t0);
+  o.stop(t0 + 0.2);
+}
+
+function rumble(){
+  if(!state.soundOn) return;
+  ensureAudio();
+  const t0 = audioCtx.currentTime;
+  const n = audioCtx.createBufferSource();
+  const buffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.18, audioCtx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for(let i=0;i<data.length;i++){
+    data[i] = (Math.random()*2-1) * Math.exp(-i/data.length*4);
+  }
+  n.buffer = buffer;
+
+  const g = audioCtx.createGain();
+  g.gain.value = 0.18;
+  const f = audioCtx.createBiquadFilter();
+  f.type="lowpass"; f.frequency.value=260;
+
+  n.connect(f); f.connect(g); g.connect(audioCtx.destination);
+  n.start(t0);
+}
+
+function tickClock(whole){
+  if(!state.soundOn) return;
+  ensureAudio();
+  const t0 = audioCtx.currentTime;
+
+  // higher pitch & slightly faster feel in last 3 seconds
+  const urgent = (whole <= 3);
+  const freq = urgent ? 1200 : 820;
+  const dur  = urgent ? 0.055 : 0.05;
+
+  const o = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  o.type = "square";
+  o.frequency.setValueAtTime(freq, t0);
+
+  g.gain.setValueAtTime(0.0001, t0);
+  g.gain.exponentialRampToValueAtTime(urgent ? 0.16 : 0.12, t0 + 0.01);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+
+  o.connect(g); g.connect(audioCtx.destination);
+  o.start(t0);
+  o.stop(t0 + dur);
+
+  // extra mini-tick for urgency (last 3 seconds)
+  if(urgent){
+    const o2 = audioCtx.createOscillator();
+    const g2 = audioCtx.createGain();
+    o2.type="square";
+    o2.frequency.setValueAtTime(freq*1.15, t0 + 0.08);
+    g2.gain.setValueAtTime(0.0001, t0 + 0.08);
+    g2.gain.exponentialRampToValueAtTime(0.10, t0 + 0.09);
+    g2.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.08 + 0.045);
+    o2.connect(g2); g2.connect(audioCtx.destination);
+    o2.start(t0 + 0.08);
+    o2.stop(t0 + 0.08 + 0.05);
+  }
+}
+
+
+function updateHUD(){
+  $('hudScore').textContent = state.score;
+  const c = $('hudCorrect'); if(c) c.textContent = state.correctCount;
+  const w = $('hudWrong');   if(w) w.textContent = state.wrongCount;
+  $('hudStreak').textContent = state.streak;
+  $('hudKills').textContent = state.kills;
+}
+
+function updateVillainUI(){
+  const cards = document.querySelectorAll('.villainCard');
+  cards.forEach((c, i)=>{
+    c.classList.toggle('dead', i < state.kills);
+    const bar = c.querySelector('.vBar > span');
+    if(bar){
+      const progress = (i < state.kills) ? 100 : (i === state.currentVillain ? (state.streak / CFG.streakToKill) * 100 : 0);
+      bar.style.width = Math.max(0, Math.min(100, progress)) + "%";
+    }
+  });
+}
+
+function showMoney(amount, label, detail){
+  const pop = document.getElementById('moneyPop');
+  document.getElementById('moneyBig').textContent = `฿${amount} THB`;
+  document.getElementById('moneyLine').textContent = label;
+  document.getElementById('moneySmall').textContent = detail;
+  pop.classList.add('show');
+  setTimeout(()=>pop.classList.remove('show'), 1200);
+}
+
+function killVillain(){
+  const names = ["A","B","C"];
+  const killedName = names[state.currentVillain] || "X";
+
+  state.kills += 1;
+  state.bonusScore += 10;
+  state.score += 10;
+
+  state.currentVillain = Math.min(state.kills, CFG.villains-1);
+  state.streak = 0; // reset streak after a kill
+
+  updateVillainUI();
+  blastParticles(true);
+  bigConfetti();
+  showMoney(10, "🔥 KILL BONUS +10", `Villain ${killedName} eliminated!`);
+}
+
+function updateVillainProgress(resetOnly=false){
+  updateVillainUI();
+  if(resetOnly) return;
+
+  if(state.streak >= CFG.streakToKill){
+    killVillain();
+  }
+}
+
+function resetRun(){
+  state.idx = 0;
+  state.order = [...Array(QUESTIONS.length).keys()].sort(()=>Math.random()-0.5);
+
+  state.score = 0;
+  state.correctCount = 0;
+  state.wrongCount = 0;
+  state.bonusScore = 0;
+
+  state.locked = false;
+  state.timeLeft = CFG.timePerQ;
+  clearInterval(state.timer); state.timer = null;
+
+  state.streak = 0;
+  state.bestStreak = 0;
+  state.kills = 0;
+  state.currentVillain = 0;
+
+  state.currentOptions = [];
+  $('msgRow').textContent = "";
+  updateVillainUI();
+  updateHUD();
+}
+
+function setMessage(html){
+  $('msgRow').innerHTML = html || "";
+}
+
+function startTimer(){
+  clearInterval(state.timer);
+
+  const tBar = $('tBar');
+  const tText = $('tText');
+
+  // PRACTICE MODE: no timer
+  if(!state.timed){
+    state.timeLeft = 0;
+    tText.textContent = "∞";
+    tBar.style.transform = "scaleX(1)";
+    state.timer = null;
+    return;
+  }
+
+  // TIMED MODE
+  state.timeLeft = CFG.timePerQ;
+  let lastWhole = Math.ceil(state.timeLeft);
+
+  tText.textContent = lastWhole + "s";
+  tBar.style.transform = "scaleX(1)";
+  tickClock(lastWhole);
+
+  state.timer = setInterval(()=>{
+    state.timeLeft -= 0.1;
+    state.timeLeft = clamp(state.timeLeft, 0, CFG.timePerQ);
+
+    const whole = Math.ceil(state.timeLeft);
+    if(whole !== lastWhole){
+      lastWhole = whole;
+      tickClock(whole);
+    }
+
+    tText.textContent = whole + "s";
+    tBar.style.transform = "scaleX(" + (state.timeLeft/CFG.timePerQ).toFixed(3) + ")";
+
+    if(state.timeLeft <= 0){
+      clearInterval(state.timer);
+      timeoutFail();
+    }
+  }, 100);
+}
+
+function loadQuestion(){
+  if(state.pendingNext){ clearTimeout(state.pendingNext); state.pendingNext=null; }
+  state.locked = false;
+  setMessage("");
+  const total = QUESTIONS.length;
+  const q = QUESTIONS[state.order[state.idx]];
+
+  $('qNo').textContent = "QUESTION " + (state.idx+1) + "/" + total + (state.timed ? "" : "  •  PRACTICE");
+  $('qText').textContent = q.q;
+
+  const usePreset = (q.options && Array.isArray(q.options) && q.options.length===3);
+  const options = usePreset ? q.options.slice() : buildOptions(q);
+  if(usePreset && !q.correct) q.correct = options[0];
+  state.currentOptions = options;
+
+  const grid = $('optGrid');
+  grid.innerHTML = "";
+  options.forEach((txt,i)=>{
+    const b = document.createElement('div');
+    b.className = 'opt';
+    b.textContent = txt;
+    b.onclick = ()=>choose(i, b);
+    grid.appendChild(b);
+  });
+
+  startTimer();
+  $('btnNext').disabled = true;
+  $('btnNext').style.opacity = .65;
+}
+
+function lockOptions(){
+  for(const el of document.querySelectorAll('.opt')){
+    el.classList.add('locked');
+  }
+  state.locked = true;
+  clearInterval(state.timer);
+}
+
+function choose(i, el){
+  if(state.locked) return;
+  lockOptions();
+
+  const q = QUESTIONS[state.order[state.idx]];
+  const selected = (state.currentOptions && state.currentOptions[i]) ? state.currentOptions[i] : el.textContent;
+  const correctText = q.correct;
+
+  const correct = (selected === correctText);
+
+  if(correct){
+    el.classList.add('correct');
+
+    state.correctCount += 1;
+    state.score += 1;
+
+    state.streak += 1;
+    state.bestStreak = Math.max(state.bestStreak, state.streak);
+
+    beep("ok");
+    rumble();
+    blastParticles(true);
+
+    setMessage(`<span class="ok">✅ CORRECT +1 • STREAK ${state.streak}/10</span>`);
+    updateVillainProgress();
+  }else{
+    el.classList.add('wrong');
+    const opts = [...document.querySelectorAll('.opt')];
+    for(const o of opts){
+      if(o.textContent === correctText) o.classList.add('correct');
+    }
+
+    state.wrongCount += 1;
+    state.streak = 0;
+
+    beep("bad");
+    blastParticles(false);
+
+    setMessage(`<span class="bad">✖ WRONG +0 • Streak reset.</span>`);
+    updateVillainProgress(true);
+  }
+
+  updateHUD();
+  endCheck();
+  scheduleAutoNext(850);
+}
+
+function timeoutFail(){
+  if(state.locked) return;
+  if(!state.timed) return; // practice mode: no timeout
+  lockOptions();
+
+  state.wrongCount += 1;
+  state.streak = 0;
+
+  beep("bad");
+  blastParticles(false);
+  setMessage(`<span class="bad">⌛ TIME UP! Wrong +1 • Streak reset.</span>`);
+
+  updateVillainProgress(true);
+  updateHUD();
+  endCheck();
+  scheduleAutoNext(850);
+}
+
+function endCheck(){
+  $('btnNext').disabled = false;
+  $('btnNext').style.opacity = 1;
+  const finished = (state.idx >= QUESTIONS.length-1);
+  $('btnNext').textContent = finished ? "FINISH ▶" : "NEXT ▶";
+}
+
+function next(){
+  // allow next anytime after a question is locked
+  if(state.pendingNext){ clearTimeout(state.pendingNext); state.pendingNext = null; }
+
+  const finished = (state.idx >= QUESTIONS.length-1);
+  if(finished){
+    showResult();
+    return;
+  }
+  state.idx += 1;
+  loadQuestion();
+}
+
+function scheduleAutoNext(delayMs=850){
+  if(state.pendingNext){ clearTimeout(state.pendingNext); }
+  state.pendingNext = setTimeout(()=>{
+    state.pendingNext = null;
+    // if user already clicked NEXT, state.idx may have changed; just guard
+    if(state.locked){
+      next();
+    }
+  }, delayMs);
+}
+
+
+function gradeLine(){
+  const maxScore = 60;
+  const pct = Math.round((state.score / maxScore) * 100);
+
+  if(state.score >= 55) return { title:"🏆 LEGEND!", line:`Amazing! Score ${state.score}/60 • Best streak ${state.bestStreak}.` };
+  if(state.score >= 45) return { title:"🔥 ELITE HUNTER", line:`Great job! Score ${state.score}/60 • Kills ${state.kills}.` };
+  if(state.score >= 30) return { title:"⚡ GOOD RUN", line:`Nice! Keep scanning the subject. Score ${state.score}/60.` };
+  if(pct >= 40) return { title:"🧪 TRAINING MODE", line:`Practice more. Watch singular/plural + time signals.` };
+  return { title:"🧪 KEEP PRACTICING", line:`Slow down and scan the SUBJECT first.` };
+}
+
+function showResult(){
+  clearInterval(state.timer);
+  show('resultScreen');
+
+  // Score display
+  $('finalScore').textContent = `${state.score} / 60`;
+
+  const g = gradeLine();
+  $('finalGrade').textContent = g.title;
+  $('finalLine').textContent = g.line;
+
+  // Stats
+  const cEl = document.getElementById('finalCorrect');
+  const wEl = document.getElementById('finalWrong');
+  const kEl = document.getElementById('finalKills');
+  const bEl = document.getElementById('finalBonus');
+  const sEl = document.getElementById('finalBestStreak');
+
+  if(cEl) cEl.textContent = state.correctCount;
+  if(wEl) wEl.textContent = state.wrongCount;
+  if(kEl) kEl.textContent = state.kills;
+  if(bEl) bEl.textContent = state.bonusScore;
+  if(sEl) sEl.textContent = state.bestStreak;
+
+  if(state.kills >= CFG.villains){
+    bigConfetti();
+    showMoney(state.bonusScore, "💥 ALL VILLAINS DOWN!", `Bonus +${state.bonusScore}. WE GO UP!`);
+  }
+}
+
+function startBattle(){
+  state.player = $('playerName').value.trim();
+
+  // read mode
+  const mode = document.querySelector('input[name="mode"]:checked')?.value || "timed";
+  state.timed = (mode === "timed");
+
+  resetRun();
+  show('gameScreen');
+  loadQuestion();
+}
+
+function goHome(){
+  clearInterval(state.timer);
+  show('startScreen');
+}
+
+/* ===== Fullscreen ===== */
+function toggleFull(){
+  const el = document.documentElement;
+  const isFull = document.fullscreenElement;
+  if(!isFull){
+    (el.requestFullscreen?.() || el.webkitRequestFullscreen?.() || el.msRequestFullscreen?.()).catch(()=>{});
+  }else{
+    (document.exitFullscreen?.() || document.webkitExitFullscreen?.() || document.msExitFullscreen?.()).catch(()=>{});
+  }
+}
+
+/* ===== Buttons ===== */
+$('btnStart').addEventListener('click', ()=>{
+  // unlock audio on mobile
+  try{ ensureAudio(); audioCtx.resume?.(); }catch(e){}
+  startBattle();
+});
+$('btnHome').addEventListener('click', goHome);
+$('btnBackHome2').addEventListener('click', goHome);
+$('btnPlayAgain').addEventListener('click', ()=>{
+  resetRun();
+  show('gameScreen');
+  loadQuestion();
+});
+$('btnNext').addEventListener('click', next);
+$('btnFull').addEventListener('click', toggleFull);
+$('btnFull2').addEventListener('click', toggleFull);
+$('btnSound').addEventListener('click', ()=>{
+  state.soundOn = !state.soundOn;
+  $('btnSound').textContent = state.soundOn ? "🔊 SOUND: ON" : "🔇 SOUND: OFF";
+  if(state.soundOn){
+    try{ ensureAudio(); audioCtx.resume?.(); beep("ok"); }catch(e){}
+  }
+});
+
+/* ===== FX Canvas (particles + flare) ===== */
+const canvas = document.getElementById('fx');
+const ctx = canvas.getContext('2d');
+let W=0,H=0, DPR=1;
+function resize(){
+  DPR = Math.min(2, window.devicePixelRatio || 1);
+  W = canvas.width = Math.floor(innerWidth * DPR);
+  H = canvas.height = Math.floor(innerHeight * DPR);
+  canvas.style.width = innerWidth + "px";
+  canvas.style.height = innerHeight + "px";
+}
+window.addEventListener('resize', resize);
+resize();
+
+let particles = [];
+function spawn(x,y,color, n, power){
+  for(let i=0;i<n;i++){
+    const a = Math.random()*Math.PI*2;
+    const sp = (power*(0.6+Math.random()*0.9))*DPR;
+    particles.push({
+      x:x*DPR, y:y*DPR,
+      vx: Math.cos(a)*sp,
+      vy: Math.sin(a)*sp,
+      life: 28 + Math.random()*18,
+      r: 2 + Math.random()*4,
+      color
+    });
+  }
+}
+function blastParticles(ok){
+  const cx = innerWidth/2, cy = innerHeight/2;
+  const color = ok ? "rgba(77,255,154,0.95)" : "rgba(255,59,122,0.95)";
+  spawn(cx, cy, color, ok? 90: 70, ok? 10: 8);
+  // lens flare streak
+  flares.push({t:0, ok});
+}
+let flares = [];
+function bigConfetti(){
+  const color = "rgba(0,229,255,0.95)";
+  for(let k=0;k<7;k++){
+    spawn(innerWidth*(0.2+Math.random()*0.6), innerHeight*0.25, color, 60, 9);
+  }
+  flares.push({t:0, ok:true, big:true});
+}
+
+function tick(){
+  ctx.clearRect(0,0,W,H);
+
+  // subtle nebula glow
+  const grd = ctx.createRadialGradient(W*0.5, H*0.18, 20, W*0.5, H*0.18, Math.max(W,H)*0.8);
+  grd.addColorStop(0, "rgba(0,229,255,0.08)");
+  grd.addColorStop(1, "rgba(0,0,0,0)");
+  ctx.fillStyle = grd;
+  ctx.fillRect(0,0,W,H);
+
+  // flares
+  for(let i=flares.length-1;i>=0;i--){
+    const f = flares[i];
+    f.t += 0.03;
+    const alpha = Math.sin(Math.min(1,f.t)*Math.PI) * (f.big? .55 : .38);
+    const x = W*(0.15 + f.t*0.9);
+    const y = H*(0.18 + (f.ok? 0.0 : 0.08));
+    ctx.save();
+    ctx.globalCompositeOperation = "screen";
+    ctx.globalAlpha = alpha;
+    ctx.translate(x,y);
+    ctx.rotate(-0.15);
+    const w = W*0.65, h = 2*DPR;
+    ctx.fillStyle = f.ok ? "rgba(0,229,255,1)" : "rgba(255,59,122,1)";
+    ctx.shadowColor = f.ok ? "rgba(0,229,255,1)" : "rgba(255,59,122,1)";
+    ctx.shadowBlur = 26*DPR;
+    ctx.fillRect(-w/2, -h/2, w, h);
+    ctx.restore();
+    if(f.t>=1) flares.splice(i,1);
+  }
+
+  // particles
+  for(let i=particles.length-1;i>=0;i--){
+    const p = particles[i];
+    p.life -= 1;
+    p.vx *= 0.96; p.vy *= 0.96;
+    p.vy += 0.06*DPR; // slight gravity
+    p.x += p.vx;
+    p.y += p.vy;
+    const a = Math.max(0, p.life/46);
+    ctx.globalAlpha = a;
+    ctx.fillStyle = p.color;
+    ctx.shadowColor = p.color;
+    ctx.shadowBlur = 18*DPR;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r*DPR, 0, Math.PI*2);
+    ctx.fill();
+    if(p.life<=0) particles.splice(i,1);
+  }
+  ctx.globalAlpha = 1;
+  requestAnimationFrame(tick);
+}
+tick();
+
+/* Start screen ambient flare */
+setTimeout(()=>{ flares.push({t:0, ok:true, big:true}); }, 500);
+
+/* Make sure "Next" works even if user taps fast */
+document.addEventListener('keydown', (e)=>{
+  if(e.key === "Enter"){
+    if(document.getElementById('gameScreen').classList.contains('active')) next();
+    if(document.getElementById('startScreen').classList.contains('active')) startBattle();
+  }
+});
+</script>
+</body>
+</html>
